@@ -880,6 +880,64 @@ def test_default_redaction(log_capture: Tuple[List[dict], List[dict]]):
     assert std_out[-1]["password"] == "--REDACTED--"
 
 
+class FrozenDict(Mapping):
+    """An implementation of a frozen dict, lifted from https://stackoverflow.com/a/2704866/1571593"""
+
+    def __init__(self, *args, **kwargs):
+        self._d = dict(*args, **kwargs)
+        self._hash = None
+
+    def __iter__(self):
+        return iter(self._d)
+
+    def __len__(self):
+        return len(self._d)
+
+    def __getitem__(self, key):
+        return self._d[key]
+
+    def __str__(self):
+        return str(self._d)
+
+    def __repr__(self):
+        return repr(self._d)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, FrozenDict):
+            return other._d == self._d
+        return False
+
+    def __hash__(self):
+        # It would have been simpler and maybe more obvious to
+        # use hash(tuple(sorted(self._d.iteritems()))) from this discussion
+        # so far, but this solution is O(n). I don't know what kind of
+        # n we are going to run into, but sometimes it's hard to resist the
+        # urge to optimize when it will gain improved algorithmic performance.
+        if self._hash is None:
+            hash_ = 0
+            for pair in self.items():
+                hash_ ^= hash(pair)
+            self._hash = hash_
+        return self._hash
+
+
+def test_default_redaction_with_general_mapping(log_capture: Tuple[List[dict], List[dict]]):
+    std_out, _ = log_capture
+
+    thing_to_redact = FrozenDict(root={"branch": {"nhs_number": {"a complex object"}}})
+
+    @log_action(log_reference="bob", password="yes", log_result=True)
+    def s_function():
+        return dict(thing_to_redact)
+
+    assert s_function() == dict(thing_to_redact)
+
+    (log,) = std_out
+    assert log["log_reference"] == "bob"
+    assert log["password"] == "--REDACTED--"
+    assert log["action_result"] == {"root": {"branch": {"nhs_number": "--REDACTED--"}}}
+
+
 def test_default_redaction_exclusion(log_capture: Tuple[List[dict], List[dict]]):
     std_out, _ = log_capture
 

@@ -336,7 +336,7 @@ class _Logger:
         if isinstance(value, (tuple, list, set)):
             return [_Logger.safe_arg(val, None, redact_fields) for val in value]
 
-        if isinstance(value, dict):
+        if isinstance(value, Mapping):
             return {k: _Logger.safe_arg(v, k, redact_fields) for k, v in value.items()}
 
         return value
