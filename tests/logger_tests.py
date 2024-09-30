@@ -38,7 +38,11 @@ from nhs_context_logging.formatters import (
     KeyValueFormatter,
     StructuredFormatter,
 )
-from nhs_context_logging.logger import ActionNotInStack, LoggingThreadPoolExecutor, set_async_tpe
+from nhs_context_logging.logger import (
+    ActionNotInStack,
+    LoggingThreadPoolExecutor,
+    set_async_tpe,
+)
 from tests.utils import concurrent_tasks, create_task, run_in_executor
 
 
@@ -936,6 +940,26 @@ def test_default_redaction_with_general_mapping(log_capture: Tuple[List[dict], L
     assert log["log_reference"] == "bob"
     assert log["password"] == "--REDACTED--"
     assert log["action_result"] == {"root": {"branch": {"nhs_number": "--REDACTED--"}}}
+
+
+def test_default_redaction_with_general_mapping_with_function_key(log_capture: Tuple[List[dict], List[dict]]):
+    std_out, _ = log_capture
+
+    def function_to_use_as_a_key():
+        return "123"
+
+    thing_to_redact = FrozenDict(root={function_to_use_as_a_key: {"nhs_number": {"a complex object"}}})
+
+    @log_action(log_reference="bob", password="yes", log_result=True)
+    def s_function():
+        return dict(thing_to_redact)
+
+    assert s_function() == dict(thing_to_redact)
+
+    (log,) = std_out
+    assert log["log_reference"] == "bob"
+    assert log["password"] == "--REDACTED--"
+    assert log["action_result"] == {"root": {function_to_use_as_a_key: {"nhs_number": "--REDACTED--"}}}
 
 
 def test_default_redaction_exclusion(log_capture: Tuple[List[dict], List[dict]]):

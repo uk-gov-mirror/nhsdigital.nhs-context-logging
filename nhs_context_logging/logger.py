@@ -324,6 +324,9 @@ class _Logger:
         if not value or isinstance(value, type):
             return value
 
+        if callable(field):
+            field = repr(field)
+
         if field and field.lower() in redact_fields:
             return "--REDACTED--"
 
