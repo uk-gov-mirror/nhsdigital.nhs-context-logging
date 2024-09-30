@@ -1083,7 +1083,7 @@ async def test_add_fields_can_change_log_level(log_capture: Tuple[List[dict], Li
     assert std_out[0]["log_info"]["level"] == "INFO"
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 async def test_async_generator_resolved_later(log_capture: Tuple[List[dict], List[dict]]):
     _, _ = log_capture
 
