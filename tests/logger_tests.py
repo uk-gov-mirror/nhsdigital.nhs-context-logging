@@ -647,7 +647,7 @@ async def test_end_action_when_action_already_popped(log_capture: Tuple[List[dic
 
     assert not std_err
     assert len(std_out) == 1
-    assert type(std_out[0]["logger_error"]) == ActionNotInStack
+    assert type(std_out[0]["logger_error"]) is ActionNotInStack
     assert std_out[0]["log_info"]["level"] == "WARNING"
 
 
@@ -663,7 +663,7 @@ async def test_end_action_when_action_already_popped_with_exception(
 
     assert not std_out
     assert len(std_err) == 1
-    assert type(std_err[0]["logger_error"]) == ActionNotInStack
+    assert type(std_err[0]["logger_error"]) is ActionNotInStack
     assert std_err[0]["log_info"]["level"] == "ERROR"
 
 
@@ -1192,7 +1192,7 @@ def test_expected_errors(log_capture: Tuple[List[dict], List[dict]]):
     with pytest.raises(NotImplementedError) as ex:
         error_function(raise_value_error=False)
 
-    assert ex.type == NotImplementedError
+    assert ex.type is NotImplementedError
 
     assert len(std_err) == 1
 
@@ -1202,7 +1202,7 @@ def test_expected_errors(log_capture: Tuple[List[dict], List[dict]]):
     with pytest.raises(ValueError, match="test") as ex:
         error_function(raise_value_error=True)
 
-    assert ex.type == ValueError
+    assert ex.type is ValueError
     assert ex.value
 
     assert len(std_err) == 0
@@ -1229,7 +1229,7 @@ def test_expected_errors_subclass(log_capture: Tuple[List[dict], List[dict]]):
     with pytest.raises(NotImplementedError) as ex:
         error_function(raise_value_error=False)
 
-    assert ex.type == NotImplementedError
+    assert ex.type is NotImplementedError
 
     assert len(std_err) == 1
 
@@ -1322,7 +1322,7 @@ def test_expected_errors_global_fields(log_capture: Tuple[List[dict], List[dict]
     with temporary_global_fields(expected_errors=(ValueError,)), pytest.raises(ValueError, match="test") as ex:
         error_function(raise_value_error=True)
 
-    assert ex.type == ValueError
+    assert ex.type is ValueError
     assert ex.value
 
     assert len(std_err) == 0
@@ -1349,7 +1349,7 @@ def test_expected_errors_in_both(log_capture: Tuple[List[dict], List[dict]]):
     with temporary_global_fields(expected_errors=(ValueError,)), pytest.raises(ValueError, match="test") as ex:
         error_function(raise_value_error=True)
 
-    assert ex.type == ValueError
+    assert ex.type is ValueError
     assert ex.value
 
     assert len(std_err) == 0
@@ -1367,7 +1367,7 @@ def test_expected_errors_in_both(log_capture: Tuple[List[dict], List[dict]]):
     with temporary_global_fields(expected_errors=(NotImplementedError,)), pytest.raises(NotImplementedError) as ex:
         error_function(raise_value_error=False)
 
-    assert ex.type == NotImplementedError
+    assert ex.type is NotImplementedError
     assert ex.value
 
     assert len(std_err) == 0
@@ -1398,7 +1398,7 @@ async def test_expected_errors_run_in_executor(log_capture: Tuple[List[dict], Li
         async with log_action("wrapper", expected_errors=(ValueError,)):
             await run_in_executor(error_function)
 
-    assert ex.type == NotImplementedError
+    assert ex.type is NotImplementedError
 
     assert len(std_out) == 0
     assert len(std_err) == 2
