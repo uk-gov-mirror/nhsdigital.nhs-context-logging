@@ -17,7 +17,7 @@ def reset_logging_storage():
     logging_context.thread_local_context_storage()
 
 
-@pytest.fixture()
+@pytest.fixture
 def unlock_global_setup():
     # Enable the app logger to be set up again
     app_logger._is_setup = False
