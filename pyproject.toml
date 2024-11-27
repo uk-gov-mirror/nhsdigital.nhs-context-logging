@@ -25,7 +25,7 @@ pytest = ["pytest", "petname"]
 # ci / testing dependencies
 petname = "^2.6"
 black = "^24.3.0"
-mypy = "^1.11.1"
+mypy = "^1.13.0"
 coverage = "^7.6.0"
 pytest = "^8.3.2"
 pytest-asyncio = "^0.24.0"
