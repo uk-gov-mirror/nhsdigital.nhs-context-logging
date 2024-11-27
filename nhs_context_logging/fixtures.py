@@ -6,7 +6,7 @@ import pytest
 from nhs_context_logging import app_logger
 from nhs_context_logging.handlers import capturing_log_handlers
 
-__all__ = ["log_capture_global_fixture", "log_capture_fixture"]
+__all__ = ["log_capture_fixture", "log_capture_global_fixture"]
 
 
 @pytest.fixture(scope="session", name="log_capture_global")

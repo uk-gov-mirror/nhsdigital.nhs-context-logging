@@ -734,7 +734,7 @@ class _ThreadLocalContextStorage(threading.local):
 
 
 class _TaskLoggingTaskStore:
-    __slots__ = ("stack", "globals_stack", "forced_levels")
+    __slots__ = ("forced_levels", "globals_stack", "stack")
 
     stack: List[LogActionContextManager]
     globals_stack: List[_Globals]
