@@ -94,7 +94,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
@@ -168,7 +168,7 @@ jobs:
 
       - name: publish junit reports
         if: success() || failure()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@3585e9575db828022551b4231f165eb59a0e74e3
         with:
           check_name: junit reports
           report_paths: reports/junit/*.xml
@@ -204,7 +204,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
@@ -235,7 +235,7 @@ jobs:
         run: make mypy
 
       - name: shellcheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38
         with:
           ignore_paths: .venv build
           ignore_names: git-secrets
@@ -288,7 +288,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 

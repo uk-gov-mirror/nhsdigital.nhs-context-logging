@@ -25,7 +25,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: publish junit reports
         if: success() || failure()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@3585e9575db828022551b4231f165eb59a0e74e3
         with:
           check_name: junit reports
           report_paths: reports/junit/*.xml
@@ -109,7 +109,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
