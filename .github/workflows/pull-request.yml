@@ -36,10 +36,12 @@ jobs:
           find . -type f | xargs chmod g+w
 
       - name: merge into base_branch
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -81,9 +83,11 @@ jobs:
 
       - name: merge into base_branch
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -191,9 +195,11 @@ jobs:
 
       - name: merge into base_branch
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -275,9 +281,11 @@ jobs:
 
       - name: merge into base_branch
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
