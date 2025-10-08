@@ -5,7 +5,6 @@ on:
       - develop
 
 jobs:
-
   tox:
     strategy:
       matrix:
@@ -15,7 +14,7 @@ jobs:
     if: github.repository == 'NHSDigital/nhs-context-logging'
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -51,13 +50,12 @@ jobs:
       - name: tox
         run: tox
 
-
   coverage:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -128,13 +126,13 @@ jobs:
 
       - name: setup java
         if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "corretto"
           java-version: "17"
 
       - name: provision sonar-scanner
-        if:  github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
+        if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
         run: |
           export SONAR_VERSION="4.7.0.2747"
           wget -q "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
@@ -156,7 +154,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-
       - name: archive reports
         if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
         uses: actions/upload-artifact@v4
@@ -176,7 +173,7 @@ jobs:
     if: github.repository == 'NHSDigital/nhs-context-logging'
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -255,7 +252,7 @@ jobs:
       - tox
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
