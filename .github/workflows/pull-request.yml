@@ -301,9 +301,11 @@ jobs:
           poetry build --format=wheel
 
       - name: poetry config
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_TOKEN }}
+          poetry config pypi-token.testpypi "${TEST_PYPI_TOKEN}"
 
       - name: poetry test publish
         run: poetry publish -r testpypi

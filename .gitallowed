@@ -1,5 +1,5 @@
 
 token: \$\{\{ secrets.GITHUB_TOKEN \}\}
 password="yes"
-.*(GITHUB|SONAR)_TOKEN: \$\{\{ secrets.(GITHUB|SONAR)_TOKEN \}\}
+.*(GITHUB|SONAR|PYPI|TEST_PYPI)_TOKEN: \$\{\{ secrets.(GITHUB|SONAR|PYPI|TEST_PYPI)_TOKEN \}\}
 .*asttokens = ">=2.1.0"

@@ -137,8 +137,10 @@ jobs:
           release_name: ${{ env.RELEASE_VERSION }}
 
       - name: poetry config
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
-          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+          poetry config pypi-token.pypi "${PYPI_TOKEN}"
 
       - name: poetry publish
         run: poetry publish
