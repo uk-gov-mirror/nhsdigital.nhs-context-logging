@@ -10,7 +10,6 @@ permissions:
   pull-requests: write
 
 jobs:
-
   tox:
     strategy:
       matrix:
@@ -20,7 +19,7 @@ jobs:
     if: github.repository == 'NHSDigital/nhs-context-logging'
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -37,10 +36,12 @@ jobs:
           find . -type f | xargs chmod g+w
 
       - name: merge into base_branch
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -56,13 +57,12 @@ jobs:
       - name: tox
         run: tox
 
-
   coverage:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -83,9 +83,11 @@ jobs:
 
       - name: merge into base_branch
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -96,7 +98,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
@@ -133,13 +135,13 @@ jobs:
 
       - name: setup java
         if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "corretto"
           java-version: "17"
 
       - name: provision sonar-scanner
-        if:  github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
+        if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
         run: |
           export SONAR_VERSION="4.7.0.2747"
           wget -q "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
@@ -161,7 +163,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-
       - name: archive reports
         if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
         uses: actions/upload-artifact@v4
@@ -171,7 +172,7 @@ jobs:
 
       - name: publish junit reports
         if: success() || failure()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@3585e9575db828022551b4231f165eb59a0e74e3
         with:
           check_name: junit reports
           report_paths: reports/junit/*.xml
@@ -181,7 +182,7 @@ jobs:
     if: github.repository == 'NHSDigital/nhs-context-logging'
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -194,9 +195,11 @@ jobs:
 
       - name: merge into base_branch
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -207,7 +210,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
@@ -238,7 +241,7 @@ jobs:
         run: make mypy
 
       - name: shellcheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38
         with:
           ignore_paths: .venv build
           ignore_names: git-secrets
@@ -260,7 +263,7 @@ jobs:
       - tox
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -278,9 +281,11 @@ jobs:
 
       - name: merge into base_branch
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo base branch "${{ github.base_ref }}"
-          echo pr branch "${{ github.head_ref }}"
+          echo pr branch "${GITHUB_HEAD_REF}"
           git checkout "${{ github.base_ref }}"
           git checkout -b "merging-${{ github.event.number }}"
           git merge --ff-only "${{ github.event.pull_request.head.sha }}"
@@ -291,7 +296,7 @@ jobs:
           python-version: "3.8"
 
       - name: setup poetry
-        uses: abatilo/actions-poetry@v4
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
         with:
           poetry-version: 1.5.1
 
@@ -304,9 +309,11 @@ jobs:
           poetry build --format=wheel
 
       - name: poetry config
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_TOKEN }}
+          poetry config pypi-token.testpypi "${TEST_PYPI_TOKEN}"
 
       - name: poetry test publish
         run: poetry publish -r testpypi
