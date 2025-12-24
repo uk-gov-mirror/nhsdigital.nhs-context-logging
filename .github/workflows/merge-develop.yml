@@ -4,15 +4,14 @@ on:
     branches:
       - develop
 
-permissions:
-  contents: write
-  checks: write
-  pull-requests: write
-
 jobs:
   coverage:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging' && !contains(github.event.head_commit.message, 'tag release version:')
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -92,6 +91,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging' && github.actor != 'dependabot[bot]' && !contains(github.event.head_commit.message, 'tag release version:')
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5

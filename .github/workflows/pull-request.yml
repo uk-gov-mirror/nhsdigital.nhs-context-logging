@@ -4,11 +4,6 @@ on:
     branches:
       - develop
 
-permissions:
-  contents: write
-  checks: write
-  pull-requests: write
-
 jobs:
   tox:
     strategy:
@@ -17,6 +12,10 @@ jobs:
 
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -60,6 +59,10 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -180,6 +183,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -257,6 +264,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     needs:
       - coverage
       - lint
