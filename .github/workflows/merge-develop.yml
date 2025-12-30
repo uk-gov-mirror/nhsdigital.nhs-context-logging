@@ -4,15 +4,14 @@ on:
     branches:
       - develop
 
-permissions:
-  contents: write
-  checks: write
-  pull-requests: write
-
 jobs:
   coverage:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging' && !contains(github.event.head_commit.message, 'tag release version:')
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -20,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.8"
 
@@ -68,7 +67,7 @@ jobs:
         if: github.actor != 'dependabot[bot]' && (success() || failure())
         run: |
           export SONAR_VERSION="4.7.0.2747"
-          wget -q "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
+          wget -q --max-redirect=0 "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
           unzip -q ./sonar-scanner.zip
           mv ./sonar-scanner-${SONAR_VERSION} ./sonar-scanner
           scripts/sonar_tests.py
@@ -92,6 +91,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging' && github.actor != 'dependabot[bot]' && !contains(github.event.head_commit.message, 'tag release version:')
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -104,7 +107,7 @@ jobs:
           find . -type f | xargs chmod g+w
 
       - name: setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.8"
 
