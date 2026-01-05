@@ -1031,7 +1031,10 @@ class LoggingContextWorkItem(thread._WorkItem):  # type: ignore[attr-defined]
     """
 
     def __init__(self, future, fn, args, kwargs):
-        super().__init__(future, fn, args, kwargs)
+        if sys.version_info < (3, 14):
+            super().__init__(future, fn, args, kwargs)
+        else:
+            super().__init__(future, fn)
         self.global_fields = logging_context.current_global_fields
 
         internal_id = self.global_fields.get(Constants.LOG_CORRELATION_ID_FIELD, logging_context.current_internal_id())
