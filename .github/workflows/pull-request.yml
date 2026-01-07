@@ -98,7 +98,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.8"
+          python-version: "3.14"
 
       - name: setup poetry
         uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
