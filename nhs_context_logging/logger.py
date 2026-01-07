@@ -1030,22 +1030,25 @@ class LoggingContextWorkItem(thread._WorkItem):  # type: ignore[attr-defined]
     threads) and use that data within the new threads from where the run() method is called.
     """
 
-    def __init__(self, future, fn, args, kwargs):
-        if sys.version_info < (3, 14):
-            super().__init__(future, fn, args, kwargs)
-        else:
+    def __init__(self, future, fn, args=None, kwargs=None):
+        if sys.version_info >= (3, 14):
             super().__init__(future, fn)
+        else:
+            super().__init__(future, fn, args, kwargs)
         self.global_fields = logging_context.current_global_fields
 
         internal_id = self.global_fields.get(Constants.LOG_CORRELATION_ID_FIELD, logging_context.current_internal_id())
         if internal_id:
             self.global_fields[Constants.LOG_CORRELATION_ID_FIELD] = internal_id
 
-    def run(self):
+    def run(self, ctx=None):
         temp_globals = _Globals(self.global_fields)
         logging_context.add_temporary_globals(temp_globals)
         try:
-            super().run()
+            if sys.version_info >= (3, 14):
+                super().run(ctx)
+            else:
+                super().run()
         finally:
             logging_context.pop_temporary_globals(temp_globals)
 
@@ -1077,7 +1080,11 @@ class WorkItemThreadPoolExecutor(ThreadPoolExecutor):
                 raise RuntimeError("cannot schedule new futures after interpreter shutdown")
 
             future: _base.Future = _base.Future()
-            work_item = self._work_item_type(future, fn, args, kwargs)
+            if sys.version_info >= (3, 14):
+                task = self._resolve_work_item_task(fn, args, kwargs)  # type: ignore[attr-defined]
+                work_item = self._work_item_type(future, task)
+            else:
+                work_item = self._work_item_type(future, fn, args, kwargs)
 
             self._work_queue.put(work_item)
             ThreadPoolExecutor._adjust_thread_count(self)  # type: ignore[misc]
