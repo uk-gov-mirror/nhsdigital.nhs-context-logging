@@ -8,7 +8,7 @@ jobs:
   tox:
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
@@ -98,7 +98,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.8"
+          python-version: "3.14"
 
       - name: setup poetry
         uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
@@ -146,8 +146,8 @@ jobs:
       - name: provision sonar-scanner
         if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
         run: |
-          export SONAR_VERSION="4.7.0.2747"
-          wget -q --max-redirect=0 "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
+          export SONAR_VERSION="8.0.1.6346"
+          wget -q   --max-redirect=0 "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
           unzip -q ./sonar-scanner.zip
           mv ./sonar-scanner-${SONAR_VERSION} ./sonar-scanner
           scripts/sonar_tests.py
