@@ -244,7 +244,7 @@ class _Logger:
                     global_fields.update(new_args)
                     new_args = global_fields
 
-            return self.safe_args(new_args)
+            return self.safe_args(new_args)  # type: ignore[arg-type]
 
         args = resolve_args
 
@@ -790,7 +790,7 @@ class _TaskIsolatedContextStorage:
             yield store
             if not hasattr(task, "parent_task"):
                 break
-            task = task.parent_task  # type: ignore[attr-defined]
+            task = task.parent_task  # type: ignore[attr-defined,union-attr]
 
     @property
     def globals_stack(self) -> list[_Globals] | None:
