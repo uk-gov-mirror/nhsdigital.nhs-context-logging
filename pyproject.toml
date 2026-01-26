@@ -24,7 +24,7 @@ pytest = ["pytest", "petname"]
 [tool.poetry.group.dev.dependencies]
 # ci / testing dependencies
 petname = "^2.6"
-black = "^24.3.0"
+black = "^26.1.0"
 mypy = "^1.13.0"
 coverage = "^7.6.0"
 pytest = "^8.3.5"
