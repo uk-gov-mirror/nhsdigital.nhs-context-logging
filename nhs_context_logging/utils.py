@@ -2,9 +2,10 @@ import logging
 import os
 import re
 import traceback
+from collections.abc import Callable
 from dataclasses import is_dataclass
 from types import FrameType
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any
 
 from nhs_context_logging.constants import Constants
 
@@ -13,7 +14,7 @@ def is_dataclass_instance(obj) -> bool:
     return is_dataclass(obj) and not isinstance(obj, type)
 
 
-def find_caller_info(caller_of: Optional[Callable] = None) -> Tuple[str, int, str, Optional[FrameType]]:
+def find_caller_info(caller_of: Callable | None = None) -> tuple[str, int, str, FrameType | None]:
     """cloned from python logger to allow caller info from app logger context"""
 
     try:
@@ -22,7 +23,7 @@ def find_caller_info(caller_of: Optional[Callable] = None) -> Tuple[str, int, st
         return "(unknown file)", 0, "(unknown function)", None
 
 
-def _find_caller_info(caller_of: Optional[Callable] = None) -> Tuple[str, int, str, Optional[FrameType]]:
+def _find_caller_info(caller_of: Callable | None = None) -> tuple[str, int, str, FrameType | None]:
     """cloned from python logger to allow caller info from app logger context"""
     frame = logging.currentframe()
 
@@ -91,9 +92,9 @@ def find_tb_source_frame(ex_tb):
 _PATH_RE = re.compile("^/.*/site-packages/")
 
 
-def get_error_info(exc_val: BaseException, include_tb: bool = True) -> Dict[str, Any]:
+def get_error_info(exc_val: BaseException, include_tb: bool = True) -> dict[str, Any]:
     exc_type = type(exc_val)
-    error_info: Dict[str, Any] = {
+    error_info: dict[str, Any] = {
         Constants.ERROR_FIELD: repr(exc_val),
         Constants.ERROR_TYPE: exc_type.__name__,
         Constants.ERROR_FULLY_QUALIFIED_TYPE: f"{exc_type.__module__}.{exc_type.__name__}",

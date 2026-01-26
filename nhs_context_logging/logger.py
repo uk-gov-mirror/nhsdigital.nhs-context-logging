@@ -8,6 +8,7 @@ import threading
 import traceback
 import typing
 from asyncio import Task
+from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor, _base, thread
 from concurrent.futures.thread import BrokenThreadPool
 from dataclasses import asdict, dataclass
@@ -18,16 +19,7 @@ from types import FrameType, TracebackType
 from typing import (
     Any,
     AnyStr,
-    Callable,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Tuple,
-    Type,
     TypeVar,
-    Union,
 )
 from uuid import uuid4
 from weakref import WeakKeyDictionary
@@ -93,7 +85,7 @@ class _Logger:
 
         self.formatter = formatter
         self.service_name = "NOT SET"
-        self._logger: Optional[logging.Logger] = None
+        self._logger: logging.Logger | None = None
         self.log_at_level = logging.getLevelName(os.environ.get("LOG_AT_LEVEL", Constants.DEFAULT_LOG_AT_LEVEL))
         self.config = LogConfig()
         self._is_setup = False
@@ -110,15 +102,15 @@ class _Logger:
     def setup(  # noqa: C901
         self,
         service_name: str,
-        handlers: Optional[List[logging.Handler]] = None,
+        handlers: list[logging.Handler] | None = None,
         append: bool = False,
         overwrite: bool = False,
         is_async: bool = False,
-        redact_fields: Optional[Set[str]] = None,
+        redact_fields: set[str] | None = None,
         internal_id_factory: Callable[[], str] = uuid4_hex_string,
-        config_kwargs: Optional[dict] = None,
-        on_init: Optional[Callable[[], None]] = None,
-        force_reinit: Optional[bool] = None,
+        config_kwargs: dict | None = None,
+        on_init: Callable[[], None] | None = None,
+        force_reinit: bool | None = None,
         **kwargs,
     ):
         """
@@ -206,7 +198,7 @@ class _Logger:
         self,
         log_level: int = logging.INFO,
         exc_info=None,
-        args: Optional[Union[str, Mapping[str, Any], Any]] = None,
+        args: str | Mapping[str, Any] | Any | None = None,
         caller_info=None,
         add_context_fields=True,
         **kwargs,
@@ -215,7 +207,7 @@ class _Logger:
             return
         include_stack_info = log_level >= logging.ERROR
         pathname, line_no, func, frame = caller_info if caller_info else find_caller_info()
-        stack_info: Optional[str] = None
+        stack_info: str | None = None
         if include_stack_info and frame:
             with io.StringIO() as sio:
                 sio.write("Stack (most recent call last):\n")
@@ -270,47 +262,46 @@ class _Logger:
 
         self.logger().handle(log_record)
 
-    def trace(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def trace(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=5, args=args, **kwargs)
 
-    def debug(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def debug(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.DEBUG, args=args, **kwargs)
 
-    def info(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def info(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.INFO, args=args, **kwargs)
 
-    def notice(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def notice(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=25, args=args, **kwargs)
 
-    def audit(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def audit(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.WARN, args=args, **kwargs)
 
-    def warning(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def warning(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.warn(args=args, **kwargs)
 
-    def warn(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def warn(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.WARN, args=args, **kwargs)
 
-    def error(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def error(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.ERROR, args=args, **kwargs)
 
-    def fatal(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def fatal(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.FATAL, args=args, **kwargs)
 
-    def critical(self, args: Optional[Union[str, dict, Callable[[], dict]]] = None, **kwargs):
+    def critical(self, args: str | dict | Callable[[], dict] | None = None, **kwargs):
         self.log(log_level=logging.CRITICAL, args=args, **kwargs)
 
     def exception(
         self,
-        args: Optional[Union[str, dict, Callable[[], dict]]] = None,
-        exc_info: Optional[
-            Union[
-                Tuple[Type[Any], Exception, object],
-                Tuple[Type[BaseException], BaseException, TracebackType],
-                Tuple[None, None, None],
-            ]
-        ] = None,
-        log_level: Optional[int] = None,
+        args: str | dict | Callable[[], dict] | None = None,
+        exc_info: (
+            tuple[type[Any], Exception, object]
+            | tuple[type[BaseException], BaseException, TracebackType]
+            | tuple[None, None, None]
+            | None
+        ) = None,
+        log_level: int | None = None,
         **kwargs,
     ):
         exc_info = exc_info or sys.exc_info()
@@ -320,7 +311,7 @@ class _Logger:
         self.log(log_level=log_level, exc_info=exc_info, args=args, **kwargs)
 
     @staticmethod
-    def safe_arg(value: Any, field: Optional[str], redact_fields: Set[str]):
+    def safe_arg(value: Any, field: str | None, redact_fields: set[str]):
         if not value or isinstance(value, type):
             return value
 
@@ -365,12 +356,12 @@ class _Logger:
 
 app_logger = _Logger()
 
-CallerInfo = Tuple[str, int, str, Optional[FrameType]]
+CallerInfo = tuple[str, int, str, FrameType | None]
 
 
-def get_args_map(func, *args, **kwargs) -> Dict[str, Any]:
+def get_args_map(func, *args, **kwargs) -> dict[str, Any]:
     """Get a map of arguments to their argument name as defined by the function."""
-    args_map: Dict[str, Any] = {}
+    args_map: dict[str, Any] = {}
     if not args and not kwargs:
         return args_map
 
@@ -441,18 +432,18 @@ class LogActionContextManager(threading.local):
 
     def __init__(
         self,
-        action: Optional[str] = None,
-        log_reference: Optional[str] = None,
-        log_level: Optional[Union[str, int]] = None,
-        log_args: Optional[List[str]] = None,
-        log_result: Optional[bool] = False,
+        action: str | None = None,
+        log_reference: str | None = None,
+        log_level: str | int | None = None,
+        log_args: list[str] | None = None,
+        log_result: bool | None = False,
         forced_log_level: bool = False,
-        caller_info: Optional[CallerInfo] = None,
+        caller_info: CallerInfo | None = None,
         **fields,
     ):
         self.log_args = log_args
         self.log_result = log_result
-        self.action_fields: Dict[str, Any] = {"log_reference": log_reference}
+        self.action_fields: dict[str, Any] = {"log_reference": log_reference}
         if log_level:
             self.action_fields[Constants.LOG_LEVEL] = log_level
         if action:
@@ -460,10 +451,10 @@ class LogActionContextManager(threading.local):
         if fields:
             self.action_fields.update(fields)
 
-        self.fields: Dict[str, Any] = {}  # this for the fields used within the action (initialised in start_action)
+        self.fields: dict[str, Any] = {}  # this for the fields used within the action (initialised in start_action)
         self.forced_log_level = forced_log_level
-        self.start_time: Optional[float] = None
-        self.end_time: Optional[float] = None
+        self.start_time: float | None = None
+        self.end_time: float | None = None
         self._caller_info = caller_info
 
     def _recreate_cm(self, func, wrapper, *args, **inner_kwargs):
@@ -479,8 +470,8 @@ class LogActionContextManager(threading.local):
         return new_context
 
     def _get_log_args(
-        self, func, wrapper, caller_inf: Optional[CallerInfo], *args, **inner_kwargs
-    ) -> Tuple[CallerInfo, Dict[str, Any]]:
+        self, func, wrapper, caller_inf: CallerInfo | None, *args, **inner_kwargs
+    ) -> tuple[CallerInfo, dict[str, Any]]:
         caller_inf = caller_inf or find_caller_info(wrapper)
 
         args_to_log = get_args(self.log_args, func, *args, **inner_kwargs) if self.log_args else {}
@@ -629,7 +620,7 @@ class LogActionContextManager(threading.local):
         return False
 
     @staticmethod
-    def _get_expected_error_level(error_levels: typing.Sequence[Tuple[type, int]], exc_type) -> int:
+    def _get_expected_error_level(error_levels: typing.Sequence[tuple[type, int]], exc_type) -> int:
         if not error_levels:
             return logging.INFO
 
@@ -640,7 +631,7 @@ class LogActionContextManager(threading.local):
         return logging.INFO
 
     @staticmethod
-    def _ensure_int_log_level(log_level: Union[str, int]) -> int:
+    def _ensure_int_log_level(log_level: str | int) -> int:
         if isinstance(log_level, int):
             return log_level
 
@@ -651,7 +642,7 @@ class LogActionContextManager(threading.local):
         raise ValueError(f"log level: {log_level}")
 
     @staticmethod
-    def _add_error_fields(message: Dict[str, Any], exc_type, exc_val, exc_tb):
+    def _add_error_fields(message: dict[str, Any], exc_type, exc_val, exc_tb):
         # if exceptions are being used for 'flow control', these can be logged as normal using "expected_errors" in the
         # in the action context or in the global context .. e.g.  @log_action(expected_errors=(ValueError,))
 
@@ -686,34 +677,34 @@ class LogActionContextManager(threading.local):
 class _Globals:
     __slots__ = ["globals"]
 
-    globals: Dict[str, Any]
+    globals: dict[str, Any]
 
-    def __init__(self, fields: Dict[str, Any]):
+    def __init__(self, fields: dict[str, Any]):
         self.globals = fields
 
 
 class _ThreadLocalContextStorage(threading.local):
     def __init__(self):
-        self._stack: List[LogActionContextManager] = []
-        self._globals_stack: List[_Globals] = []
-        self._force_log_at_levels: List[int] = []
+        self._stack: list[LogActionContextManager] = []
+        self._globals_stack: list[_Globals] = []
+        self._force_log_at_levels: list[int] = []
 
     @property
-    def stack(self) -> List[LogActionContextManager]:
+    def stack(self) -> list[LogActionContextManager]:
         return self._stack
 
     @property
-    def current_context(self) -> Optional[LogActionContextManager]:
+    def current_context(self) -> LogActionContextManager | None:
         if not self._stack:
             return None
         return self._stack[-1]
 
     @property
-    def globals_stack(self) -> List[_Globals]:
+    def globals_stack(self) -> list[_Globals]:
         return self._globals_stack
 
     @property
-    def current_global_fields(self) -> Dict[str, Any]:
+    def current_global_fields(self) -> dict[str, Any]:
         global_fields = {}
         for layer in self.globals_stack:
             if layer.globals:
@@ -722,11 +713,11 @@ class _ThreadLocalContextStorage(threading.local):
         return global_fields
 
     @property
-    def forced_log_levels(self) -> List[int]:
+    def forced_log_levels(self) -> list[int]:
         return self._force_log_at_levels
 
     @property
-    def current_forced_log_level(self) -> Optional[int]:
+    def current_forced_log_level(self) -> int | None:
         if not self._force_log_at_levels:
             return None
 
@@ -736,9 +727,9 @@ class _ThreadLocalContextStorage(threading.local):
 class _TaskLoggingTaskStore:
     __slots__ = ("forced_levels", "globals_stack", "stack")
 
-    stack: List[LogActionContextManager]
-    globals_stack: List[_Globals]
-    forced_levels: List[int]
+    stack: list[LogActionContextManager]
+    globals_stack: list[_Globals]
+    forced_levels: list[int]
 
     def __init__(self):
         self.stack = []
@@ -748,12 +739,12 @@ class _TaskLoggingTaskStore:
 
 class _TaskIsolatedContextStorage:
     __slots__ = ("_task_store",)
-    _task_store: Dict[Task, _TaskLoggingTaskStore]
+    _task_store: dict[Task, _TaskLoggingTaskStore]
 
     def __init__(self):
         self._task_store = WeakKeyDictionary()  # type: ignore
 
-    def _get_task_store(self, task: Optional[Task] = None) -> Optional[_TaskLoggingTaskStore]:
+    def _get_task_store(self, task: Task | None = None) -> _TaskLoggingTaskStore | None:
         try:
             task = task or asyncio.current_task()
         except RuntimeError:
@@ -768,7 +759,7 @@ class _TaskIsolatedContextStorage:
         return self._task_store[task]
 
     @property
-    def stack(self) -> Optional[List[LogActionContextManager]]:
+    def stack(self) -> list[LogActionContextManager] | None:
         store = self._get_task_store()
         if not store:
             return None
@@ -776,7 +767,7 @@ class _TaskIsolatedContextStorage:
         return store.stack
 
     @property
-    def current_context(self) -> Optional[LogActionContextManager]:
+    def current_context(self) -> LogActionContextManager | None:
         for store in self._get_stack_stores():
             if store and store.stack:
                 return store.stack[-1]
@@ -802,7 +793,7 @@ class _TaskIsolatedContextStorage:
             task = task.parent_task  # type: ignore[attr-defined]
 
     @property
-    def globals_stack(self) -> Optional[List[_Globals]]:
+    def globals_stack(self) -> list[_Globals] | None:
         store = self._get_task_store()
         if not store:
             return None
@@ -810,8 +801,8 @@ class _TaskIsolatedContextStorage:
         return store.globals_stack
 
     @property
-    def current_global_fields(self) -> Dict[str, Any]:
-        global_fields: Dict[str, Any] = {}
+    def current_global_fields(self) -> dict[str, Any]:
+        global_fields: dict[str, Any] = {}
 
         for store in reversed(list(self._get_stack_stores())):
             if not store:
@@ -824,7 +815,7 @@ class _TaskIsolatedContextStorage:
         return global_fields
 
     @property
-    def forced_log_levels(self) -> Optional[List[int]]:
+    def forced_log_levels(self) -> list[int] | None:
         store = self._get_task_store()
         if not store:
             return None
@@ -832,7 +823,7 @@ class _TaskIsolatedContextStorage:
         return store.forced_levels
 
     @property
-    def current_forced_log_level(self) -> Optional[int]:
+    def current_forced_log_level(self) -> int | None:
         for store in self._get_stack_stores():
             if store and store.forced_levels:
                 return store.forced_levels[-1]
@@ -840,10 +831,10 @@ class _TaskIsolatedContextStorage:
         return None
 
 
-_app_globals: Dict[str, Any] = {}
+_app_globals: dict[str, Any] = {}
 
 
-def set_async_tpe(tpe_type: Type[ThreadPoolExecutor]):
+def set_async_tpe(tpe_type: type[ThreadPoolExecutor]):
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -857,10 +848,10 @@ def set_async_tpe(tpe_type: Type[ThreadPoolExecutor]):
 
 class _LoggingContext(threading.local):
     def __init__(self):
-        self._on_init: Optional[Callable[[], None]] = None
+        self._on_init: Callable[[], None] | None = None
         self._needs_init = True
-        self._storage: Optional[Union[_TaskIsolatedContextStorage, _ThreadLocalContextStorage]] = None
-        self._storage_factory: Callable[[], Union[_TaskIsolatedContextStorage, _ThreadLocalContextStorage]] = (
+        self._storage: _TaskIsolatedContextStorage | _ThreadLocalContextStorage | None = None
+        self._storage_factory: Callable[[], _TaskIsolatedContextStorage | _ThreadLocalContextStorage] = (
             _ThreadLocalContextStorage
         )
 
@@ -878,7 +869,7 @@ class _LoggingContext(threading.local):
         self._needs_init = False
 
     @property
-    def app_globals(self) -> Dict[str, Any]:
+    def app_globals(self) -> dict[str, Any]:
         return _app_globals
 
     @property
@@ -889,7 +880,7 @@ class _LoggingContext(threading.local):
 
         return self._storage
 
-    def force_log_at_level(self, log_at_level: Union[int, str]):
+    def force_log_at_level(self, log_at_level: int | str):
         log_level = logging.getLevelName(log_at_level) if isinstance(log_at_level, str) else log_at_level
 
         self.storage.forced_log_levels.append(log_level)
@@ -898,7 +889,7 @@ class _LoggingContext(threading.local):
         self.storage.forced_log_levels.pop(-1)
 
     def log_at_level(self) -> int:
-        log_level: Optional[int] = self.storage.current_forced_log_level
+        log_level: int | None = self.storage.current_forced_log_level
         if log_level is None:
             log_level = typing.cast(int, app_logger.log_at_level)
         return log_level
@@ -915,10 +906,10 @@ class _LoggingContext(threading.local):
             return typing.cast(LogActionContextManager, stack.pop(i - 1))
         raise ActionNotInStack
 
-    def current(self) -> Optional[LogActionContextManager]:
-        return typing.cast(Optional[LogActionContextManager], self.storage.current_context)
+    def current(self) -> LogActionContextManager | None:
+        return typing.cast(LogActionContextManager | None, self.storage.current_context)
 
-    def current_internal_id(self) -> Optional[str]:
+    def current_internal_id(self) -> str | None:
         current_action = self.current()
         if not current_action:
             return None
@@ -951,7 +942,7 @@ class _LoggingContext(threading.local):
         raise ValueError("item not found")
 
     @property
-    def current_global_fields(self) -> Dict[str, Any]:
+    def current_global_fields(self) -> dict[str, Any]:
         global_fields = _app_globals.copy()
         storage_fields = self.storage.current_global_fields
         if storage_fields:
@@ -1061,7 +1052,7 @@ class WorkItemThreadPoolExecutor(ThreadPoolExecutor):
         thread_name_prefix: str = "",
         initializer=None,
         initargs=(),
-        work_item_type: Type[thread._WorkItem] = LoggingContextWorkItem,
+        work_item_type: type[thread._WorkItem] = LoggingContextWorkItem,
     ):
         self._work_item_type = work_item_type
         super().__init__(

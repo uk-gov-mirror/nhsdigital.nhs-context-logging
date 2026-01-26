@@ -2,18 +2,12 @@ import json
 import logging
 import os
 import re
+from collections.abc import Generator, Iterable, Mapping, Sequence
 from dataclasses import asdict
 from datetime import date, datetime
 from decimal import Decimal
 from typing import (
     Any,
-    Dict,
-    Generator,
-    Iterable,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
     cast,
 )
 
@@ -52,7 +46,7 @@ class StructuredFormatter(logging.Formatter):
     """provides structured format for logging"""
 
     def format(self, record: logging.LogRecord) -> dict:  # type: ignore[override]  # noqa: C901
-        log: Dict[str, Any] = {}
+        log: dict[str, Any] = {}
 
         log.update(
             {
@@ -60,7 +54,7 @@ class StructuredFormatter(logging.Formatter):
             }
         )
 
-        log_args: Dict[str, Any] = {}
+        log_args: dict[str, Any] = {}
         if record.args:
             args = record.args
 
@@ -137,9 +131,7 @@ class JSONFormatter(StructuredFormatter):
 
 
 class KeyValueFormatter(StructuredFormatter):
-    def __init__(
-        self, drop_fields: Optional[Sequence[str]] = None, list_delimiter: str = ",", datefmt: Optional[str] = None
-    ):
+    def __init__(self, drop_fields: Sequence[str] | None = None, list_delimiter: str = ",", datefmt: str | None = None):
         super().__init__(datefmt=datefmt)
         self.drop_fields = drop_fields or []
         self.list_delimiter = list_delimiter
@@ -161,8 +153,8 @@ class KeyValueFormatter(StructuredFormatter):
         return str(repr(value))
 
     def _flatten_fields(
-        self, record_dict: Mapping[str, Any], parent_key: Optional[str] = None
-    ) -> Generator[Tuple[str, str], None, None]:
+        self, record_dict: Mapping[str, Any], parent_key: str | None = None
+    ) -> Generator[tuple[str, str], None, None]:
         for key, value in record_dict.items():
             key = f"{parent_key}_{key}" if parent_key else key
 

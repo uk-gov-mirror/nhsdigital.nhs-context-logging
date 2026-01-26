@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, Iterable, List, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 import pytest
 
@@ -10,9 +11,9 @@ __all__ = ["log_capture_fixture", "log_capture_global_fixture"]
 
 
 @pytest.fixture(scope="session", name="log_capture_global")
-def log_capture_global_fixture() -> Iterable[Tuple[List[dict], List[dict]]]:
-    std_out: List[Dict[str, Any]] = []
-    std_err: List[Dict[str, Any]] = []
+def log_capture_global_fixture() -> Iterable[tuple[list[dict], list[dict]]]:
+    std_out: list[dict[str, Any]] = []
+    std_err: list[dict[str, Any]] = []
 
     capturing_handlers = capturing_log_handlers(std_out, std_err)
 
@@ -28,7 +29,7 @@ def log_capture_global_fixture() -> Iterable[Tuple[List[dict], List[dict]]]:
 
 
 @pytest.fixture(name="log_capture")
-def log_capture_fixture(log_capture_global) -> Iterable[Tuple[List[dict], List[dict]]]:
+def log_capture_fixture(log_capture_global) -> Iterable[tuple[list[dict], list[dict]]]:
     std_out, std_err = log_capture_global
 
     std_out.clear()
