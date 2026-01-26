@@ -13,7 +13,7 @@ repository = "https://github.com/NHSDigital/nhs-context-logging"
 
 [tool.poetry.dependencies]
 # core dependencies
-python = ">=3.8.1"
+python = ">=3.10"
 
 [tool.poetry.extras]
 pytest = ["pytest", "petname"]
@@ -24,7 +24,7 @@ pytest = ["pytest", "petname"]
 [tool.poetry.group.dev.dependencies]
 # ci / testing dependencies
 petname = "^2.6"
-black = "^24.3.0"
+black = "^26.1.0"
 mypy = "^1.13.0"
 coverage = "^7.6.0"
 pytest = "^8.3.5"
@@ -70,12 +70,12 @@ exclude = [
 ]
 lint.unfixable = ["SIM112"]
 line-length = 120
-target-version = "py38"
+target-version = "py310"
 
 
 [tool.black]
 line-length = 120
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312', 'py313', 'py314']
 include = '\.pyi?$'
 #extend-exclude = '''
 #/(
@@ -126,7 +126,7 @@ python_files = "*_tests.py test_*.py"
 norecursedirs = ".git .venv .eggs build dist .tox"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 show_error_codes = true
@@ -136,12 +136,10 @@ check_untyped_defs = true
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38,py39,py310,py311,py312,py313,p314
+envlist = py310,py311,py312,py313,py314
 
 [gh-actions]
 python =
-    3.8: py38
-    3.9: py39
     3.10: py310
     3.11: py311
     3.12: py312

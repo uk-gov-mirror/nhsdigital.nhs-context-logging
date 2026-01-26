@@ -5,6 +5,7 @@ import inspect
 import json
 import logging
 import time
+from collections.abc import Callable, Generator, Mapping
 from concurrent.futures import thread
 from dataclasses import dataclass
 from datetime import datetime
@@ -12,12 +13,6 @@ from decimal import Decimal
 from functools import partial, wraps
 from typing import (
     Any,
-    Callable,
-    Generator,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
     TypeVar,
     cast,
 )
@@ -46,7 +41,7 @@ from nhs_context_logging.logger import (
 from tests.utils import concurrent_tasks, create_task, run_in_executor
 
 
-def assert_single_internal_id(log_capture: Tuple[List[dict], List[dict]]):
+def assert_single_internal_id(log_capture: tuple[list[dict], list[dict]]):
     internal_ids = {line["internal_id"] for line in (log_capture[0] + log_capture[1])}
     assert len(internal_ids) == 1, internal_ids
 
@@ -131,7 +126,7 @@ def test_setup_default_internal_id_factory(log_capture):
     assert std_out[0]["internal_id"] != "bob"
 
 
-def test_logging_simple(log_capture: Tuple[List[dict], List[dict]]):
+def test_logging_simple(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     app_logger.info(lambda: {"test": 123})
@@ -141,7 +136,7 @@ def test_logging_simple(log_capture: Tuple[List[dict], List[dict]]):
     assert std_out[0]["test"] == 123
 
 
-def test_logging_simple_is_lazy(log_capture: Tuple[List[dict], List[dict]]):
+def test_logging_simple_is_lazy(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     prev_level = app_logger.log_at_level
@@ -164,7 +159,7 @@ def test_logging_simple_is_lazy(log_capture: Tuple[List[dict], List[dict]]):
         app_logger.log_at_level = prev_level
 
 
-def test_logging_default_logger(log_capture: Tuple[List[dict], List[dict]]):
+def test_logging_default_logger(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
     level = logging.root.level
     logging.root.setLevel(INFO)
@@ -174,7 +169,7 @@ def test_logging_default_logger(log_capture: Tuple[List[dict], List[dict]]):
     assert std_out[0]["message"] == "test"
 
 
-def test_log_exception(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_exception(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     try:
@@ -196,7 +191,7 @@ def test_log_exception(log_capture: Tuple[List[dict], List[dict]]):
     assert 'raise ValueError("testing")' in err["error_info"]["traceback"]
 
 
-def test_with_action_logging(log_capture: Tuple[List[dict], List[dict]]):
+def test_with_action_logging(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     with log_action(field=123):
@@ -215,7 +210,7 @@ def test_with_action_logging(log_capture: Tuple[List[dict], List[dict]]):
     assert "internal_id" in log
 
 
-def test_with_action_logging_exploded_model(log_capture: Tuple[List[dict], List[dict]]):
+def test_with_action_logging_exploded_model(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     with log_action(field=MyModel(name="vic")):
@@ -236,7 +231,7 @@ def test_with_action_logging_exploded_model(log_capture: Tuple[List[dict], List[
     assert "internal_id" in log
 
 
-def test_with_action_logging_exploded_model_added_after(log_capture: Tuple[List[dict], List[dict]]):
+def test_with_action_logging_exploded_model_added_after(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     with log_action(field=123):
@@ -255,7 +250,7 @@ def test_with_action_logging_exploded_model_added_after(log_capture: Tuple[List[
     assert "internal_id" in log
 
 
-def test_with_action_logging_exception(log_capture: Tuple[List[dict], List[dict]]):
+def test_with_action_logging_exception(log_capture: tuple[list[dict], list[dict]]):
     _, std_err = log_capture
 
     try:
@@ -279,7 +274,7 @@ def test_with_action_logging_exception(log_capture: Tuple[List[dict], List[dict]
     assert "internal_id" in log
 
 
-def test_log_action(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action()
@@ -299,7 +294,7 @@ def test_log_action(log_capture: Tuple[List[dict], List[dict]]):
     assert log["action_status"] == "succeeded"
 
 
-def test_log_action_with_args(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_with_args(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_args=["_bob"])
@@ -321,7 +316,7 @@ def test_log_action_with_args(log_capture: Tuple[List[dict], List[dict]]):
     assert log["_bob"] == "vic"
 
 
-def test_log_action_with_args_and_prepend_module_name(unlock_global_setup, log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_with_args_and_prepend_module_name(unlock_global_setup, log_capture: tuple[list[dict], list[dict]]):
     app_logger.setup(service_name="myApp", config_kwargs={"prepend_module_name": True})
 
     std_out, _ = log_capture
@@ -345,7 +340,7 @@ def test_log_action_with_args_and_prepend_module_name(unlock_global_setup, log_c
     assert log["_bob"] == "vic"
 
 
-def test_log_action_with_model_exploded(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_with_model_exploded(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_args=["_bob"])
@@ -367,7 +362,7 @@ def test_log_action_with_model_exploded(log_capture: Tuple[List[dict], List[dict
     assert log["_bob"]["name"] == "vic"
 
 
-def test_log_action_with_named_action(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_with_named_action(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(action="test", log_args=["_bob"])
@@ -388,7 +383,7 @@ def test_log_action_with_named_action(log_capture: Tuple[List[dict], List[dict]]
     assert log["_bob"] == "vic"
 
 
-def test_log_action_exception(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_exception(log_capture: tuple[list[dict], list[dict]]):
     _, std_err = log_capture
 
     @log_action()
@@ -409,7 +404,7 @@ def test_log_action_exception(log_capture: Tuple[List[dict], List[dict]]):
     assert log["action_status"] == "failed"
 
 
-async def test_async_logging_context_concurrent(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_logging_context_concurrent(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action()
@@ -441,7 +436,7 @@ async def test_async_logging_context_concurrent(log_capture: Tuple[List[dict], L
     assert_single_internal_id(log_capture)
 
 
-async def test_async_logging_context_linear(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_logging_context_linear(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action()
@@ -468,7 +463,7 @@ async def test_async_logging_context_linear(log_capture: Tuple[List[dict], List[
     assert_single_internal_id(log_capture)
 
 
-async def test_async_logging_context_concurrent_tasks(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_logging_context_concurrent_tasks(log_capture: tuple[list[dict], list[dict]]):
     @log_action()
     async def my_coro2(task_id: str):
         print(f"starting task {task_id}")
@@ -504,7 +499,7 @@ async def test_async_logging_context_concurrent_tasks(log_capture: Tuple[List[di
     assert_single_internal_id(log_capture)
 
 
-def test_concurrent_with_global_logging_context(log_capture: Tuple[List[dict], List[dict]]):
+def test_concurrent_with_global_logging_context(log_capture: tuple[list[dict], list[dict]]):
     global_id = uuid4().hex
 
     @log_action()
@@ -539,7 +534,7 @@ def test_concurrent_with_global_logging_context(log_capture: Tuple[List[dict], L
     assert my_io_global_id == {global_id}
 
 
-def test_concurrent_with_logging_context(log_capture: Tuple[List[dict], List[dict]]):
+def test_concurrent_with_logging_context(log_capture: tuple[list[dict], list[dict]]):
     @log_action()
     def my_task(task_id: str, wait: float):
         print(f"starting task {task_id}")
@@ -569,7 +564,7 @@ def test_concurrent_with_logging_context(log_capture: Tuple[List[dict], List[dic
     assert std_out[0]["internal_id"] == internal_id
 
 
-def test_concurrent_logging_with_no_context(log_capture: Tuple[List[dict], List[dict]]):
+def test_concurrent_logging_with_no_context(log_capture: tuple[list[dict], list[dict]]):
     global_id = uuid4().hex
 
     @log_action()
@@ -602,14 +597,14 @@ def test_concurrent_logging_with_no_context(log_capture: Tuple[List[dict], List[
     assert my_io_global_id == {global_id}
 
 
-def test_generator(log_capture: Tuple[List[dict], List[dict]]):
+def test_generator(log_capture: tuple[list[dict], list[dict]]):
     @log_action()
     def inner_action() -> str:
         action = logging_context.current()
         return action.internal_id
 
     @log_action()
-    def generator_action(count: int) -> Generator[Optional[str], None, None]:
+    def generator_action(count: int) -> Generator[str | None, None, None]:
         for _ in range(count):
             yield logging_context.current_internal_id(), inner_action()
 
@@ -624,7 +619,7 @@ def test_generator(log_capture: Tuple[List[dict], List[dict]]):
     assert_single_internal_id(log_capture)
 
 
-async def test_generator_exit(log_capture: Tuple[List[dict], List[dict]], tmp_path):
+async def test_generator_exit(log_capture: tuple[list[dict], list[dict]], tmp_path):
     @log_action()
     async def outer_action():
         raise GeneratorExit
@@ -639,7 +634,7 @@ async def test_generator_exit(log_capture: Tuple[List[dict], List[dict]], tmp_pa
     assert std_out[0]["log_info"]["level"] == "INFO"
 
 
-async def test_end_action_when_action_already_popped(log_capture: Tuple[List[dict], List[dict]], tmp_path):
+async def test_end_action_when_action_already_popped(log_capture: tuple[list[dict], list[dict]], tmp_path):
     async with log_action(internal_id="bob") as action:
         logging_context.pop(action)
 
@@ -652,7 +647,7 @@ async def test_end_action_when_action_already_popped(log_capture: Tuple[List[dic
 
 
 async def test_end_action_when_action_already_popped_with_exception(
-    log_capture: Tuple[List[dict], List[dict]], tmp_path
+    log_capture: tuple[list[dict], list[dict]], tmp_path
 ):
     with pytest.raises(ValueError, match="eek"):  # noqa: PT012
         async with log_action(internal_id="bob") as action:
@@ -667,7 +662,7 @@ async def test_end_action_when_action_already_popped_with_exception(
     assert std_err[0]["log_info"]["level"] == "ERROR"
 
 
-async def test_async_logging_context_run_in_executor(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_logging_context_run_in_executor(log_capture: tuple[list[dict], list[dict]]):
 
     app_logger.setup("pytest", is_async=True, force_reinit=True)
     global_id = uuid4().hex
@@ -728,7 +723,7 @@ class CustomExecutor(LoggingThreadPoolExecutor):
 setup_no_context_tpe = partial(set_async_tpe, tpe_type=CustomExecutor)
 
 
-async def test_async_logging_context_run_in_executor_override_init(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_logging_context_run_in_executor_override_init(log_capture: tuple[list[dict], list[dict]]):
 
     app_logger.setup("pytest", is_async=True, force_reinit=True, on_init=setup_no_context_tpe)
     global_id = uuid4().hex
@@ -846,7 +841,7 @@ def test_key_value_formatter_drop_part_log_info():
 
 
 @pytest.mark.parametrize("log_result", [True, False])
-def test_sync_context(log_result: bool, log_capture: Tuple[List[dict], List[dict]]):
+def test_sync_context(log_result: bool, log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_reference="bob", log_result=log_result)
@@ -867,7 +862,7 @@ def test_sync_context(log_result: bool, log_capture: Tuple[List[dict], List[dict
         assert logged_results == []
 
 
-def test_default_redaction(log_capture: Tuple[List[dict], List[dict]]):
+def test_default_redaction(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_reference="bob", nhs_number="yes", password="yes")
@@ -925,7 +920,7 @@ class FrozenDict(Mapping):
         return self._hash
 
 
-def test_default_redaction_with_general_mapping(log_capture: Tuple[List[dict], List[dict]]):
+def test_default_redaction_with_general_mapping(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     thing_to_redact = FrozenDict(root={"branch": {"nhs_number": {"a complex object"}}})
@@ -942,7 +937,7 @@ def test_default_redaction_with_general_mapping(log_capture: Tuple[List[dict], L
     assert log["action_result"] == {"root": {"branch": {"nhs_number": "--REDACTED--"}}}
 
 
-def test_default_redaction_with_general_mapping_with_function_key(log_capture: Tuple[List[dict], List[dict]]):
+def test_default_redaction_with_general_mapping_with_function_key(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     def function_to_use_as_a_key():
@@ -962,7 +957,7 @@ def test_default_redaction_with_general_mapping_with_function_key(log_capture: T
     assert log["action_result"] == {"root": {function_to_use_as_a_key: {"nhs_number": "--REDACTED--"}}}
 
 
-def test_default_redaction_exclusion(log_capture: Tuple[List[dict], List[dict]]):
+def test_default_redaction_exclusion(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_reference="bob", nhs_number="yes", password="yes", dont_redact={"nhs_number"})
@@ -979,7 +974,7 @@ def test_default_redaction_exclusion(log_capture: Tuple[List[dict], List[dict]])
     assert std_out[-1]["password"] == "--REDACTED--"
 
 
-def test_sync_generator(log_capture: Tuple[List[dict], List[dict]]):
+def test_sync_generator(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_reference="test")
@@ -997,7 +992,7 @@ def test_sync_generator(log_capture: Tuple[List[dict], List[dict]]):
 
 
 @pytest.mark.parametrize("log_result", [True, False])
-async def test_async_context(log_result: bool, log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_context(log_result: bool, log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_result=log_result)
@@ -1019,7 +1014,7 @@ async def test_async_context(log_result: bool, log_capture: Tuple[List[dict], Li
         assert logged_results == []
 
 
-async def test_async_generator(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_generator(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action()
@@ -1040,7 +1035,7 @@ async def test_async_generator(log_capture: Tuple[List[dict], List[dict]]):
     assert std_out[-1]["log_info"]["func"] == "test_async_generator"
 
 
-def test_sync_generator_context_manager(log_capture: Tuple[List[dict], List[dict]]):
+def test_sync_generator_context_manager(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     def sg_function(count):
@@ -1070,7 +1065,7 @@ def test_sync_generator_context_manager(log_capture: Tuple[List[dict], List[dict
     assert messages == ["0middle", "1middle", "2middle", "fin"]
 
 
-async def test_add_fields_can_change_log_level(log_capture: Tuple[List[dict], List[dict]]):
+async def test_add_fields_can_change_log_level(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_level=logging.NOTSET)
@@ -1084,7 +1079,7 @@ async def test_add_fields_can_change_log_level(log_capture: Tuple[List[dict], Li
 
 
 @pytest.mark.skip
-async def test_async_generator_resolved_later(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_generator_resolved_later(log_capture: tuple[list[dict], list[dict]]):
     _, _ = log_capture
 
     async def asg_function(count):
@@ -1104,7 +1099,7 @@ async def test_async_generator_resolved_later(log_capture: Tuple[List[dict], Lis
     _ = [num async for num in gen]
 
 
-def test_logger_kwargs(log_capture: Tuple[List[dict], List[dict]]):
+def test_logger_kwargs(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     app_logger.info(log_reference="MESH1234", another="test")
@@ -1118,7 +1113,7 @@ def test_logger_kwargs(log_capture: Tuple[List[dict], List[dict]]):
     assert log["another"] == "test"
 
 
-def test_logger_args_and_kwargs(log_capture: Tuple[List[dict], List[dict]]):
+def test_logger_args_and_kwargs(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     app_logger.info({"test": 1234}, log_reference="MESH1234", test=0)
@@ -1132,7 +1127,7 @@ def test_logger_args_and_kwargs(log_capture: Tuple[List[dict], List[dict]]):
     assert log["test"] == 1234
 
 
-def test_logger_message_and_kwargs(log_capture: Tuple[List[dict], List[dict]]):
+def test_logger_message_and_kwargs(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     app_logger.info("test", log_reference="MESH1234", test=0, message="test2")
@@ -1147,7 +1142,7 @@ def test_logger_message_and_kwargs(log_capture: Tuple[List[dict], List[dict]]):
     assert log["message"] == "test"
 
 
-def test_logger_list_args_and_kwargs(log_capture: Tuple[List[dict], List[dict]]):
+def test_logger_list_args_and_kwargs(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     app_logger.info(123, log_reference="MESH1234", message="test2")
@@ -1161,7 +1156,7 @@ def test_logger_list_args_and_kwargs(log_capture: Tuple[List[dict], List[dict]])
     assert "message" not in log
 
 
-def test_logger_callable_args_and_kwargs(log_capture: Tuple[List[dict], List[dict]]):
+def test_logger_callable_args_and_kwargs(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     def get_args():
@@ -1179,7 +1174,7 @@ def test_logger_callable_args_and_kwargs(log_capture: Tuple[List[dict], List[dic
     assert "log_reference" in log
 
 
-def test_expected_errors(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(action="ex_test", expected_errors=(ValueError,))
@@ -1213,7 +1208,7 @@ def test_expected_errors(log_capture: Tuple[List[dict], List[dict]]):
     assert log["action_status"] == "error"
 
 
-def test_expected_errors_subclass(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_subclass(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     class SubValueError(ValueError):
@@ -1250,7 +1245,7 @@ def test_expected_errors_subclass(log_capture: Tuple[List[dict], List[dict]]):
     assert log["action_status"] == "error"
 
 
-def test_expected_errors_raise_log_level_to_info(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_raise_log_level_to_info(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(action="ex_test", log_level=logging.DEBUG, expected_errors=(ValueError,))
@@ -1268,7 +1263,7 @@ def test_expected_errors_raise_log_level_to_info(log_capture: Tuple[List[dict], 
     assert log["action_status"] == "error"
 
 
-def test_expected_errors_specific_levels(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_specific_levels(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(
@@ -1291,7 +1286,7 @@ def test_expected_errors_specific_levels(log_capture: Tuple[List[dict], List[dic
     assert log["action_status"] == "error"
 
 
-def test_expected_errors_raise_doesnt_lower_log_level(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_raise_doesnt_lower_log_level(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(action="ex_test", log_level=logging.WARN, expected_errors=(ValueError,))
@@ -1309,7 +1304,7 @@ def test_expected_errors_raise_doesnt_lower_log_level(log_capture: Tuple[List[di
     assert log["action_status"] == "error"
 
 
-def test_expected_errors_global_fields(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_global_fields(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(action="ex_test")
@@ -1336,7 +1331,7 @@ def test_expected_errors_global_fields(log_capture: Tuple[List[dict], List[dict]
     assert log["error_info"]["args"] == ("test",)
 
 
-def test_expected_errors_in_both(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_in_both(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(action="ex_test", expected_errors=(NotImplementedError,))
@@ -1380,7 +1375,7 @@ def test_expected_errors_in_both(log_capture: Tuple[List[dict], List[dict]]):
     assert log["error_info"]["fq_type"] == "builtins.NotImplementedError"
 
 
-async def test_expected_errors_run_in_executor(log_capture: Tuple[List[dict], List[dict]]):
+async def test_expected_errors_run_in_executor(log_capture: tuple[list[dict], list[dict]]):
     app_logger.setup("pytest", is_async=True, force_reinit=True)
 
     std_out, std_err = log_capture
@@ -1442,13 +1437,13 @@ async def test_expected_errors_run_in_executor(log_capture: Tuple[List[dict], Li
 
 
 class _HTTPException(Exception):
-    def __init__(self, status_code: int, detail: Optional[str] = None) -> None:
+    def __init__(self, status_code: int, detail: str | None = None) -> None:
         super().__init__()
         self.status_code = status_code
         self.detail = detail
 
 
-def test_expected_errors_complex_exception(log_capture: Tuple[List[dict], List[dict]]):
+def test_expected_errors_complex_exception(log_capture: tuple[list[dict], list[dict]]):
     std_out, std_err = log_capture
 
     @log_action(expected_errors=(_HTTPException,))
@@ -1474,7 +1469,7 @@ def test_expected_errors_complex_exception(log_capture: Tuple[List[dict], List[d
     assert isinstance(log["error_info"]["line_no"], int)
 
 
-async def test_async_sync_concurrent_tasks_transfer(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_sync_concurrent_tasks_transfer(log_capture: tuple[list[dict], list[dict]]):
     app_logger.setup("pytest", is_async=True, force_reinit=True)
 
     @log_action()
@@ -1508,7 +1503,7 @@ async def test_async_sync_concurrent_tasks_transfer(log_capture: Tuple[List[dict
     assert_single_internal_id(log_capture)
 
 
-async def test_async_to_run_in_executor_sync(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_to_run_in_executor_sync(log_capture: tuple[list[dict], list[dict]]):
     app_logger.setup("pytest", is_async=True, force_reinit=True)
 
     global_id = uuid4().hex
@@ -1556,7 +1551,7 @@ async def test_async_to_run_in_executor_sync(log_capture: Tuple[List[dict], List
     assert_single_internal_id(log_capture)
 
 
-def test_log_action_exception_with_log_ref_override(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_exception_with_log_ref_override(log_capture: tuple[list[dict], list[dict]]):
     _, std_err = log_capture
 
     @log_action(log_reference="BANANA", log_reference_on_error="PLUM")
@@ -1579,7 +1574,7 @@ def test_log_action_exception_with_log_ref_override(log_capture: Tuple[List[dict
     assert "log_reference_on_error" not in log
 
 
-def test_log_action_exception_with_log_ref_unset(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_exception_with_log_ref_unset(log_capture: tuple[list[dict], list[dict]]):
     _, std_err = log_capture
 
     @log_action(log_reference="BANANA", log_reference_on_error=None)
@@ -1602,7 +1597,7 @@ def test_log_action_exception_with_log_ref_unset(log_capture: Tuple[List[dict], 
     assert "log_reference_on_error" not in log
 
 
-def test_log_action_exception_with_log_ref_unset_on_log_ref(log_capture: Tuple[List[dict], List[dict]]):
+def test_log_action_exception_with_log_ref_unset_on_log_ref(log_capture: tuple[list[dict], list[dict]]):
     _, std_err = log_capture
 
     @log_action(log_reference_on_error="BANANA")
@@ -1676,7 +1671,7 @@ def test_decimal_structured_formatter():
     assert formatted["sub"]["dec2"] == Decimal("523.109")
 
 
-def test_set_internal_id_from_temporary_global_fields(log_capture: Tuple[List[dict], List[dict]]):
+def test_set_internal_id_from_temporary_global_fields(log_capture: tuple[list[dict], list[dict]]):
     _, std_err = log_capture
 
     @log_action(log_reference="BANANA", log_reference_on_error=None)
@@ -1698,7 +1693,7 @@ def test_set_internal_id_from_temporary_global_fields(log_capture: Tuple[List[di
     assert log["internal_id"] == "RASPBERRY"
 
 
-async def test_async_set_internal_id_from_temporary_global_fields(log_capture: Tuple[List[dict], List[dict]]):
+async def test_async_set_internal_id_from_temporary_global_fields(log_capture: tuple[list[dict], list[dict]]):
     std_out, _ = log_capture
 
     @log_action(log_reference="BANANA", log_reference_on_error=None)

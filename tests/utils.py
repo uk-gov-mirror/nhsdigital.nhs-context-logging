@@ -1,16 +1,10 @@
 import asyncio
 import concurrent.futures
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import (
     Any,
-    Callable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
     TypeVar,
     cast,
 )
@@ -70,11 +64,11 @@ def create_task(func: Callable, *args, **kwargs):
 
 
 def concurrent_tasks(
-    parallels: List[Tuple[str, Callable, Sequence[Any]]],
+    parallels: list[tuple[str, Callable, Sequence[Any]]],
     raise_if_ex: bool = True,
     with_results=True,
-    max_workers: Optional[int] = None,
-    tpe_type: Type[ThreadPoolExecutor] = LoggingThreadPoolExecutor,
+    max_workers: int | None = None,
+    tpe_type: type[ThreadPoolExecutor] = LoggingThreadPoolExecutor,
 ) -> Mapping[str, Any]:
     """
     Execute a collection of tasks in parallel, wait for all tasks to complete and return the
@@ -128,7 +122,7 @@ def concurrent_tasks(
 class ConcurrentExceptions(Exception):
     """custom concurrent exception implementation, with extended output"""
 
-    def __init__(self, *exceptions: Tuple[str, Exception]):
+    def __init__(self, *exceptions: tuple[str, Exception]):
         super().__init__(*exceptions)
 
         self.exceptions = dict(exceptions)

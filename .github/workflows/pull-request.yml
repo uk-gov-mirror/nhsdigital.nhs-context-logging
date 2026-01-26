@@ -8,7 +8,7 @@ jobs:
   tox:
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     runs-on: ubuntu-latest
     if: github.repository == 'NHSDigital/nhs-context-logging'
@@ -114,7 +114,7 @@ jobs:
         with:
           path: |
             .venv
-          key: ${{ runner.os }}-poetry-v2-py3.8-${{ hashFiles('./poetry.lock') }}
+          key: ${{ runner.os }}-poetry-v2-py${{ matrix.python-version }}-${{ hashFiles('./poetry.lock') }}
 
       - name: git reset
         run: git reset --hard
@@ -214,7 +214,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.8"
+          python-version: "3.10"
 
       - name: setup poetry
         uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
@@ -230,7 +230,7 @@ jobs:
         with:
           path: |
             .venv
-          key: ${{ runner.os }}-poetry-v2-py3.8-${{ hashFiles('./poetry.lock') }}
+          key: ${{ runner.os }}-poetry-v2-py3.10-${{ hashFiles('./poetry.lock') }}
 
       - name: git reset
         run: git reset --hard
@@ -304,7 +304,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.8"
+          python-version: "3.10"
 
       - name: setup poetry
         uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8

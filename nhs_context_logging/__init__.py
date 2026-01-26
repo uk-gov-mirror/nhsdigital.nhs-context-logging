@@ -1,5 +1,5 @@
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 from nhs_context_logging.constants import Constants
 from nhs_context_logging.logger import (

@@ -1,6 +1,5 @@
 import logging
 import sys
-from typing import List
 
 from nhs_context_logging.formatters import StructuredFormatter
 
@@ -11,7 +10,7 @@ _filter_not_errors = staticmethod(lambda r: bool(r.levelno < logging.ERROR))
 class StructuredCapturingHandler(logging.Handler):
     """log emitter"""
 
-    def __init__(self, messages: List[dict], level=logging.NOTSET):
+    def __init__(self, messages: list[dict], level=logging.NOTSET):
         super().__init__(level)
         self.messages = messages
         self._formatter = StructuredFormatter()
@@ -22,7 +21,7 @@ class StructuredCapturingHandler(logging.Handler):
         self.messages.append(log)
 
 
-def capturing_log_handlers(stdout_cap: List[dict], stderr_cap: List[dict]):
+def capturing_log_handlers(stdout_cap: list[dict], stderr_cap: list[dict]):
     stdout_handler = StructuredCapturingHandler(stdout_cap)
     stdout_handler.addFilter(type("", (logging.Filter,), {"filter": _filter_not_errors}))
 
