@@ -985,9 +985,9 @@ class _LoggingContext(threading.local):
         self._storage_factory = _ThreadLocalContextStorage
 
 
-def _context_storage_task_factory(loop, coro):
+def _context_storage_task_factory(loop, coro, **task_kwargs):
     # This is the default way to create a child task.
-    child_task = asyncio.tasks.Task(coro, loop=loop)
+    child_task = asyncio.tasks.Task(coro, loop=loop, **task_kwargs)
 
     # Retrieve the request from the parent task...
     parent_task = asyncio.current_task(loop=loop)
