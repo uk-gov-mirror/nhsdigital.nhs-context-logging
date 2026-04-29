@@ -50,11 +50,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: setup poetry
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
+        with:
+          poetry-version: 1.5.1
+
+      - name: add poetry plugins
+        run: |
+          poetry self add "poetry-dynamic-versioning[plugin]"
+
       - name: install dependencies
-        run: 'pip install --only-binary :all: tox==4.46.3 tox-gh-actions==3.5.0'
+        run: poetry install --with dev --no-interaction --sync
 
       - name: tox
-        run: tox
+        run: poetry run tox
 
   coverage:
     runs-on: ubuntu-latest

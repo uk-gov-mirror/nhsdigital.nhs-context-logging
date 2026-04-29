@@ -30,6 +30,7 @@ coverage = "^7.13.4"
 pytest = "^9.0.2"
 pytest-asyncio = "^1"
 tox = "^4.46.3"
+tox-gh-actions = "^3.5.0"
 ruff = "^0"
 
 
@@ -40,34 +41,30 @@ ipython = "^8.12.2"
 [tool.ruff]
 lint.select = [
     # See https://beta.ruff.rs/docs/rules/ for a full list
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
-    "Q", # flake8-quotes
-    "YTT", # flake8-2020
-    "RSE", # flake8-raise
-    "T10", # flake8-debugger
-    "ISC", # flake8-implicit-str-concat
-    "ICN", # flake8-import-conventions
-    "PIE", # flake8-pie
-    "EXE", # flake8-executable
-    "A", # flake8-builtins
-    "UP",  # pyupgrade
-    "PT", # flake8-pytest-style
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "C",    # flake8-comprehensions
+    "B",    # flake8-bugbear
+    "Q",    # flake8-quotes
+    "YTT",  # flake8-2020
+    "RSE",  # flake8-raise
+    "T10",  # flake8-debugger
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "PIE",  # flake8-pie
+    "EXE",  # flake8-executable
+    "A",    # flake8-builtins
+    "UP",   # pyupgrade
+    "PT",   # flake8-pytest-style
     "PERF", # Perflint #
-    "RUF", # Ruff-specific rules
-    "SIM", # flake8-simplify
+    "RUF",  # Ruff-specific rules
+    "SIM",  # flake8-simplify
 ]
 src = ["."]
-lint.ignore = [
-]
-exclude = [
-    ".git",
-    ".venv",
-]
+lint.ignore = []
+exclude = [".git", ".venv"]
 lint.unfixable = ["SIM112"]
 line-length = 120
 target-version = "py310"
@@ -87,27 +84,16 @@ include = '\.pyi?$'
 #'''
 
 
-
 [tool.coverage.run]
 branch = true
-omit = [
-    ".venv/*",
-]
-source = [
-    "."
-]
+omit = [".venv/*"]
+source = ["."]
 
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
-exclude_lines = [
-    "pragma: no cover",
-    "from .*",
-    "import .*"
-]
-omit = [
-    "tests/*",
-]
+exclude_lines = ["pragma: no cover", "from .*", "import .*"]
+omit = ["tests/*"]
 sort = "-cover"
 ignore_errors = true
 precision = 2
@@ -116,7 +102,6 @@ show_missing = true
 
 [tool.coverage.xml]
 output = "reports/coverage.xml"
-
 
 
 [tool.pytest.ini_options]
@@ -175,9 +160,7 @@ format-jinja = """
 """
 
 [tool.poetry-dynamic-versioning.substitution]
-folders = [
-    { path = "./" }
-]
+folders = [{ path = "./" }]
 
 [build-system]
 requires = ["poetry>=1.2", "poetry-dynamic-versioning"]
