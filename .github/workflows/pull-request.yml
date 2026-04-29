@@ -338,7 +338,7 @@ jobs:
     if: ${{ always() && github.repository == 'NHSDigital/nhs-context-logging' && github.triggering_actor == 'dependabot[bot]' && contains(needs.*.result, 'failure') }}
     steps:
       - name: Slack Notification
-        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3.0.1
         with:
           webhook: ${{ secrets.DEPENDABOT_SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
