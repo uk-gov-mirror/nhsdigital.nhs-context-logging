@@ -58,9 +58,13 @@ jobs:
       - name: add poetry plugins
         run: |
           poetry self add "poetry-dynamic-versioning[plugin]"
+        env:
+          POETRY_INSTALLER_ONLY_BINARY: ":all:"
 
       - name: install dependencies
         run: poetry install --with dev --no-interaction --sync
+        env:
+          POETRY_INSTALLER_ONLY_BINARY: ":all:"
 
       - name: tox
         run: poetry run tox
