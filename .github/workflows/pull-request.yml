@@ -50,11 +50,24 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: setup poetry
+        uses: abatilo/actions-poetry@0dd19c9498c3dc8728967849d0d2eae428a8a3d8
+        with:
+          poetry-version: 2.2.1
+
+      - name: add poetry plugins
+        run: |
+          poetry self add "poetry-dynamic-versioning[plugin]"
+        env:
+          POETRY_INSTALLER_ONLY_BINARY: ":all:"
+
       - name: install dependencies
-        run: pip install tox tox-gh-actions
+        run: poetry install --with dev --no-interaction --sync
+        env:
+          POETRY_INSTALLER_ONLY_BINARY: ":all:"
 
       - name: tox
-        run: tox
+        run: poetry run tox
 
   coverage:
     runs-on: ubuntu-latest
@@ -137,14 +150,14 @@ jobs:
           thresholdAll: 0.70
 
       - name: setup java
-        if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
+        if: ${{ !github.event.pull_request.head.repo.fork && (success() || failure()) }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: "corretto"
           java-version: "17"
 
       - name: provision sonar-scanner
-        if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
+        if: ${{ !github.event.pull_request.head.repo.fork && (success() || failure()) }}
         run: |
           export SONAR_VERSION="8.0.1.6346"
           wget -q   --max-redirect=0 "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}.zip" -O sonar-scanner.zip
@@ -153,7 +166,7 @@ jobs:
           scripts/sonar_tests.py
 
       - name: run sonar scan
-        if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
+        if: ${{ !github.event.pull_request.head.repo.fork && (success() || failure()) }}
         run: |
           PATH="$PWD/sonar-scanner/bin:$PATH"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -167,7 +180,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: archive reports
-        if: github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && (success() || failure())
+        if: ${{ !github.event.pull_request.head.repo.fork && (success() || failure()) }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: reports
@@ -328,3 +341,37 @@ jobs:
 
       - name: poetry test publish
         run: poetry publish -r testpypi
+  
+  slack-notification:
+    runs-on: ubuntu-latest
+    needs:
+      - tox
+      - coverage
+      - lint
+    if: ${{ always() && github.repository == 'NHSDigital/nhs-context-logging' && github.triggering_actor == 'dependabot[bot]' && contains(needs.*.result, 'failure') }}
+    steps:
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3.0.1
+        with:
+          webhook: ${{ secrets.DEPENDABOT_SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":alarm: DEPENDABOT PR FAILED :alarm:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Checks failed for ${{ github.repository }}:${{ github.ref }} in <https://github.com/${{ github.repository }}/pull/${{ github.event.number }}|PR #${{ github.event.number }}>"
+                  }
+                }
+              ]
+            }
